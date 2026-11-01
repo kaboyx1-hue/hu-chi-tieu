@@ -1,5 +1,5 @@
 // Cho phep mo app khi mat mang. Co mang thi luon lay ban moi; mang yeu qua 2,5 giay thi dung ban da luu.
-const KHO = 'hct-2';
+const KHO = 'hct-3';
 const TEP = ['./', 'index.html', 'app.js', 'tinh.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -15,7 +15,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith((async () => {
-    const mang = fetch(e.request).then(async tl => {
+    // no-cache: luon hoi lai GitHub, tranh trang moi di voi tep cu con nam trong bo nho tam 10 phut
+    const mang = fetch(e.request, { cache: 'no-cache' }).then(async tl => {
       if (tl.ok) (await caches.open(KHO)).put(e.request, tl.clone());
       return tl;
     });
