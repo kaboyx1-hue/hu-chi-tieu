@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hũ Chi Tiêu">
+<title>Hũ Chi Tiêu</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--nen:#f5f3ee;--the:#fff;--chu:#1f2523;--mo:#68716d;--vien:#e4e1d8;--chinh:#0f766e;--chinhnhat:#d9efeb;
+--vao:#15803d;--ra:#c2410c;--canh:#b45309;--qua:#dc2626;--bong:0 1px 2px rgba(30,30,20,.06)}
+@media (prefers-color-scheme:dark){:root{--nen:#101413;--the:#1a201e;--chu:#e9edeb;--mo:#98a29e;--vien:#2b3431;--chinh:#2dd4bf;--chinhnhat:#143a35;
+--vao:#4ade80;--ra:#fb923c;--canh:#fbbf24;--qua:#f87171;--bong:none}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--nen);color:var(--chu);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--chinh);outline-offset:2px}
+main{max-width:560px;margin:0 auto;padding:0 14px}
+header{position:sticky;top:0;z-index:5;background:var(--nen);padding:calc(8px + env(safe-area-inset-top)) 14px 8px}
+.dauthang{max-width:532px;margin:0 auto;display:flex;align-items:center;gap:4px}
+.dauthang h1{flex:1;margin:0;font-size:19px;font-weight:700;text-align:center}
+.tron{width:44px;height:44px;border-radius:50%;font-size:24px;line-height:1;color:var(--mo)}
+.tron:active{background:var(--vien)}
+#dongbo{display:block;max-width:532px;width:100%;margin:0 auto;font-size:12.5px;color:var(--mo);text-align:center;min-height:18px}
+#dongbo.loi{color:var(--qua);font-weight:600}
+.the{background:var(--the);border:1px solid var(--vien);border-radius:16px;padding:14px;margin:0 0 12px;box-shadow:var(--bong)}
+.the h2{margin:0 0 10px;font-size:14px;font-weight:600;color:var(--mo)}
+.nhan{font-size:13px;color:var(--mo)}
+.solon{font-size:34px;font-weight:750;letter-spacing:-.5px;line-height:1.15;font-variant-numeric:tabular-nums}
+.am{color:var(--qua)}
+.ba{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--vien)}
+.ba b{display:block;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.vao{color:var(--vao)}.ra{color:var(--ra)}
+.cot{display:flex;align-items:flex-end;gap:2px;height:88px}
+.cot i{flex:1;background:var(--chinh);opacity:.75;border-radius:2px 2px 0 0;min-height:1px}
+.cot i.nay{background:var(--ra);opacity:1}
+.trucngay{display:flex;justify-content:space-between;font-size:11px;color:var(--mo);margin-top:4px}
+.hu{display:block;width:100%;text-align:left;padding:10px 0;border-top:1px solid var(--vien)}
+.hu:first-of-type{border-top:0;padding-top:0}
+.huhang{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.huten{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.huso{font-size:13.5px;color:var(--mo);white-space:nowrap;font-variant-numeric:tabular-nums}
+.vach{height:8px;border-radius:4px;background:var(--vien);margin-top:7px;overflow:hidden}
+.vach i{display:block;height:100%;background:var(--chinh);border-radius:4px}
+.vach i.canh{background:var(--canh)}.vach i.qua{background:var(--qua)}
+.huphu{font-size:12.5px;color:var(--mo);margin-top:4px}
+.huphu.qua{color:var(--qua);font-weight:600}
+.locs{display:flex;gap:8px;overflow-x:auto;margin:0 -14px 12px;padding:2px 14px;scrollbar-width:none}
+.locs::-webkit-scrollbar{display:none}
+.loc{flex:none;padding:7px 13px;border-radius:18px;background:var(--the);border:1px solid var(--vien);font-size:14px}
+.loc.on{background:var(--chinh);border-color:var(--chinh);color:var(--the);font-weight:600}
+.ngay{display:flex;justify-content:space-between;font-size:13px;color:var(--mo);margin:14px 2px 6px}
+.nhom{background:var(--the);border:1px solid var(--vien);border-radius:14px;overflow:hidden}
+.dong{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;text-align:left;border-top:1px solid var(--vien);min-height:54px}
+.dong:first-child{border-top:0}
+.dong .ic{font-size:21px;width:28px;text-align:center;flex:none}
+.dong .giua{flex:1;min-width:0}
+.dong .ten{font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dong .phu{font-size:12.5px;color:var(--mo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dong .tien{font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+.trong{text-align:center;color:var(--mo);padding:34px 18px}
+.hang{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--vien)}
+.hang:first-of-type{border-top:0}
+.hang input{min-width:0;height:44px;padding:0 10px;border:1px solid var(--vien);border-radius:10px;background:var(--nen);font-size:16px}
+.hang .i1{width:50px;flex:none;text-align:center;padding:0}
+.hang .i2{flex:1.3}
+.hang .i3{flex:1;text-align:right;font-variant-numeric:tabular-nums}
+.btn{height:46px;padding:0 16px;border-radius:12px;background:var(--chinhnhat);color:var(--chinh);font-weight:650;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.chinh{background:var(--chinh);color:var(--the)}
+.btn.xoa{color:var(--qua);background:none}
+.btn.rong{width:100%}
+.xoahu{width:40px;height:44px;flex:none;color:var(--mo);font-size:18px}
+#ghichu{font-size:13px;color:var(--mo);margin:10px 0 0}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--the);border-top:1px solid var(--vien);padding-bottom:env(safe-area-inset-bottom)}
+.navtrong{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr;align-items:center;height:64px}
+.tab{height:64px;font-size:12px;color:var(--mo);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.tab span{font-size:21px;line-height:1.1;filter:grayscale(1);opacity:.75}
+.tab.on{color:var(--chinh);font-weight:650}
+.tab.on span{filter:none;opacity:1}
+#them{width:60px;height:60px;border-radius:50%;margin:-18px auto 0;background:var(--chinh);color:var(--the);font-size:32px;line-height:1;box-shadow:0 4px 12px rgba(15,118,110,.4)}
+/* Mo tu tren xuong: ban phim dien thoai che nua duoi man hinh, nut Luu phai luon thay duoc */
+dialog{border:0;padding:env(safe-area-inset-top) 0 0;margin:0 0 auto;width:100%;max-width:100%;max-height:100dvh;background:var(--the);color:var(--chu);border-radius:0 0 20px 20px}
+@media (min-width:600px){dialog{margin:auto;max-width:520px;border-radius:20px}}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.hop{padding:14px 16px calc(16px + env(safe-area-inset-bottom))}
+.dauhop{display:flex;align-items:center;margin-bottom:8px}
+.chon2{flex:1;display:grid;grid-template-columns:1fr 1fr;background:var(--nen);border-radius:12px;padding:3px}
+.chon2 button{height:40px;border-radius:9px;font-weight:600;color:var(--mo)}
+.chon2 button.on{background:var(--the);color:var(--chu);box-shadow:var(--bong)}
+.chon2 button.on[data-loai=chi]{color:var(--ra)}.chon2 button.on[data-loai=thu]{color:var(--vao)}
+.otien{display:flex;align-items:center;gap:8px;margin:6px 0}
+#fTien{flex:1;min-width:0;height:60px;border:0;border-bottom:2px solid var(--vien);background:none;font-size:32px;font-weight:750;font-variant-numeric:tabular-nums}
+#fTien:focus{outline:0;border-color:var(--chinh)}
+.nhanh{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.nhanh::-webkit-scrollbar{display:none}
+.nhanh button{flex:none;height:36px;padding:0 12px;border-radius:9px;background:var(--nen);font-size:14px;font-variant-numeric:tabular-nums}
+.luoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:4px 0 10px}
+.luoi button{min-height:58px;padding:6px 4px;border-radius:12px;background:var(--nen);font-size:12.5px;line-height:1.2;overflow-wrap:anywhere;border:2px solid transparent}
+.luoi button span{display:block;font-size:20px}
+.luoi button.on{border-color:var(--chinh);background:var(--chinhnhat);font-weight:650}
+.hai{display:grid;grid-template-columns:150px 1fr;gap:8px;margin-bottom:12px}
+.hai input,#fLink{width:100%;height:46px;padding:0 10px;border:1px solid var(--vien);border-radius:10px;background:var(--nen);font-size:16px;min-width:0}
+#fXoa[hidden]{display:none}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:9;width:calc(100% - 28px);max-width:520px;background:var(--chu);color:var(--nen);border-radius:12px;padding:6px 8px 6px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;font-size:14.5px}
+#toast[hidden]{display:none}
+#toast button{padding:8px 10px;font-weight:700;color:inherit;text-decoration:underline}
+</style>
+</head>
+<body>
+<header>
+  <div class="dauthang">
+    <button class="tron" data-lam="thangLui" aria-label="Tháng trước">‹</button>
+    <h1 id="tieude"></h1>
+    <button class="tron" data-lam="thangToi" aria-label="Tháng sau">›</button>
+  </div>
+  <button id="dongbo" data-lam="dongBoNgay"></button>
+</header>
+<main id="trang"></main>
+<nav>
+  <div class="navtrong">
+    <button class="tab" data-tab="tq"><span>📊</span>Tổng quan</button>
+    <button class="tab" data-tab="so"><span>📒</span>Sổ</button>
+    <button id="them" data-lam="themMoi" aria-label="Thêm khoản mới">+</button>
+    <button class="tab" data-tab="hu"><span>🫙</span>Các hũ</button>
+    <button class="tab" data-tab="nam"><span>📅</span>Cả năm</button>
+  </div>
+</nav>
+
+<dialog id="hop">
+  <form class="hop" method="dialog" id="fForm" novalidate>
+    <div class="dauhop">
+      <div class="chon2">
+        <button type="button" data-loai="chi">Chi tiền</button>
+        <button type="button" data-loai="thu">Tiền vào</button>
+      </div>
+      <button type="button" class="tron" data-lam="dongHop" aria-label="Đóng">✕</button>
+    </div>
+    <div class="otien">
+      <input id="fTien" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Số tiền">
+      <span class="nhan">đ</span>
+      <button type="submit" class="btn chinh">Lưu</button>
+    </div>
+    <div class="nhanh" id="fNhanh"></div>
+    <div class="luoi" id="fHu"></div>
+    <div class="hai">
+      <input id="fNgay" type="date" aria-label="Ngày">
+      <input id="fGhi" maxlength="200" placeholder="Ghi chú" autocomplete="off" aria-label="Ghi chú">
+    </div>
+    <button type="button" class="btn xoa rong" id="fXoa" data-lam="xoaKhoan">Xoá khoản này</button>
+  </form>
+</dialog>
+<div id="toast" hidden role="status"></div>
+<script src="tinh.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
