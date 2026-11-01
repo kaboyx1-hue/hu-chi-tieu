@@ -1,5 +1,5 @@
 // Cho phep mo app khi mat mang. Co mang thi luon lay ban moi; mang yeu qua 2,5 giay thi dung ban da luu.
-const KHO = 'hct-1';
+const KHO = 'hct-2';
 const TEP = ['./', 'index.html', 'app.js', 'tinh.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
