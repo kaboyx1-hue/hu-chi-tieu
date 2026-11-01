@@ -67,6 +67,7 @@
     }
 
     const tongHan = hus.reduce((s, h) => s + h.han, 0);
+    const chiCoHan = hus.reduce((s, h) => s + (h.han ? h.chi : 0), 0); // hu chua dat han muc khong tru vao han muc hu khac
     const laHienTai = T.thangCua(homNay) === thang;
     const quaKhu = thang < T.thangCua(homNay);
     const ngayQua = laHienTai ? Number(homNay.slice(8, 10)) : quaKhu ? soNgay : 0;
@@ -79,7 +80,7 @@
       duCuoi: duDau + thu - chi,
       theoNgay, hus, tongHan, laHienTai, ngayCon, tbNgay,
       duBao: laHienTai ? Math.round(tbNgay * soNgay) : chi,
-      moiNgay: laHienTai && tongHan ? Math.max(0, Math.floor((tongHan - chi) / ngayCon)) : null,
+      moiNgay: laHienTai && tongHan ? Math.max(0, Math.floor((tongHan - chiCoHan) / ngayCon)) : null,
     };
   };
 

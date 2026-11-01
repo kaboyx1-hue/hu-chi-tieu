@@ -101,7 +101,9 @@ async function dongBo() {
     conNua = daNhan > 0 && Object.keys(S.ban).length > 0;
     if (kq.ds.length) veAnToan();
   } catch (e) {
-    trangThai.loi = navigator.onLine === false ? '' : (e.name === 'AbortError' ? 'Mạng chậm, sẽ thử lại' : e.message || 'Chưa gửi được, sẽ thử lại');
+    // Loi mang cua trinh duyet la tieng Anh, chi hien nguyen van loi do may chu bao.
+    const loiMang = e.name === 'AbortError' || e.name === 'TypeError' || e.name === 'SyntaxError';
+    trangThai.loi = navigator.onLine === false ? '' : loiMang ? 'Chưa gửi được, sẽ tự thử lại' : e.message;
   }
   trangThai.dang = false;
   veDongBo();
@@ -113,9 +115,9 @@ function veDongBo() {
   const cho = Object.keys(S.ban).length;
   el.className = trangThai.loi ? 'loi' : '';
   if (!S.lk) el.textContent = 'Chỉ lưu trên máy này. Hãy mở bằng link riêng để dùng sổ chung';
-  else if (trangThai.loi) el.textContent = `${trangThai.loi}${cho ? ` · ${cho} khoản chờ gửi` : ''}`;
+  else if (trangThai.loi) el.textContent = `${trangThai.loi}${cho ? ` · ${cho} mục chờ gửi` : ''}`;
   else if (trangThai.dang) el.textContent = 'Đang đồng bộ…';
-  else if (cho) el.textContent = `${cho} khoản chờ gửi, có mạng sẽ tự gửi`;
+  else if (cho) el.textContent = `${cho} mục chờ gửi, có mạng sẽ tự gửi`;
   else if (trangThai.luc) el.textContent = 'Đã đồng bộ lúc ' + new Date(trangThai.luc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   else el.textContent = '';
 }

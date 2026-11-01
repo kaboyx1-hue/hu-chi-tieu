@@ -85,6 +85,12 @@ test('vuot han muc: con tieu duoc khong am, ngay cuoi thang khong chia 0', () =>
   assert.equal(b.hus[0].con, -400);
 });
 
+test('hu chua dat han muc khong an vao han muc hu khac', () => {
+  const hm = [{ hu: 'an', tu: '2026-11', tien: 1000, xoa: 0 }];
+  const b = T.baoCao([gd('2026-11-01', 'chi', 400), gd('2026-11-01', 'chi', 900, 'nha')], HUS, hm, '2026-11', '2026-11-30');
+  assert.equal(b.moiNgay, 600);
+});
+
 test('thang da qua khong co nhip, du bao bang so that', () => {
   const b = T.baoCao([gd('2026-10-01', 'chi', 500)], HUS, [], '2026-10', '2026-11-05');
   assert.equal(b.laHienTai, false);
