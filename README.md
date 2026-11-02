@@ -21,4 +21,4 @@ Repo này công khai và **không chứa dữ liệu nào**. Số tiền nằm t
 ## Phát hành
 
 - Giao diện: đẩy lên `main`, GitHub Pages tự cập nhật.
-- Máy chủ: trong `apps-script/` chạy `clasp push` rồi `clasp deploy -i <id đang dùng>`. Cần file `.clasp.json` (không nằm trong repo, lấy mã script từ Sheet → Tiện ích → Apps Script → Project Settings).
+- Máy chủ: trong `apps-script/` chạy `clasp push --force` rồi `clasp update-deployment <id đang dùng>`. Bản triển khai đang dùng phải được tạo từ trình soạn thảo Apps Script: bản tạo bằng lệnh `clasp` bị Google chặn người ngoài dù cấu hình đúng. Cần file `.clasp.json` (không nằm trong repo, lấy mã script từ Sheet → Tiện ích → Apps Script → Project Settings).
