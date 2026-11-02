@@ -239,8 +239,8 @@ function tungHat() {
     const xa = 70 + Math.random() * 70;
     h.className = 'hat';
     h.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;background:${MAU[i % MAU.length]};--x:${Math.cos(goc) * xa}px;--y:${Math.sin(goc) * xa - 50}px`;
-    h.addEventListener('animationend', () => h.remove());
     document.body.appendChild(h);
+    setTimeout(() => h.remove(), 900); // khong doi su kien ket thuc: app bi che thi hieu ung khong chay
   }
 }
 
@@ -252,8 +252,8 @@ document.addEventListener('pointerdown', e => {
   const g = document.createElement('i');
   g.className = 'gon';
   g.style.cssText = `left:${e.clientX - r.left}px;top:${e.clientY - r.top}px`;
-  g.addEventListener('animationend', () => g.remove());
   el.appendChild(g);
+  setTimeout(() => g.remove(), 600);
 });
 
 // Dong bo chay ngam: dang go trong o nao thi khong ve lai, tranh mat chu dang go.
