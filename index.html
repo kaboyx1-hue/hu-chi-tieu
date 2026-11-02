@@ -166,12 +166,13 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--the);paddi
 #them:active svg{transform:rotate(90deg)}
 
 /* Man nhap khoan: tran man hinh, truot len. So tien o tren cung nen ban phim khong che */
-dialog{border:0;padding:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;background:var(--nen);color:var(--chu);overflow:auto}
-dialog[open]{animation:truotLen .3s var(--nhanh)}
+dialog{border:0;padding:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;background:var(--nen);color:var(--chu);overflow:hidden}
+dialog[open]{display:flex;flex-direction:column;animation:truotLen .3s var(--nhanh)}
+#fForm{flex:1;min-height:0;display:flex;flex-direction:column}
 dialog.dangdong{animation:truotXuong .2s ease-in forwards}
 dialog::backdrop{background:rgba(0,40,30,.4)}
 @media (min-width:600px){dialog{margin:auto;max-width:480px;height:auto;max-height:92dvh;border-radius:24px}}
-.dauhop{background:linear-gradient(180deg,var(--c1),var(--c2));color:#fff;padding:calc(8px + env(safe-area-inset-top)) 12px 20px;border-radius:0 0 26px 26px;transition:background .25s}
+.dauhop{background:linear-gradient(180deg,var(--c1),var(--c2));color:#fff;padding:calc(6px + env(safe-area-inset-top)) 12px 10px;border-radius:0 0 26px 26px;transition:background .25s}
 #fForm.thu .dauhop{background:linear-gradient(180deg,#5b21b6,var(--tim))}
 #fForm.chi .dauhop{background:linear-gradient(180deg,#e8590c,#ff8f3f)}
 .hanghop{display:flex;align-items:center;gap:6px}
@@ -201,20 +202,28 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 @keyframes lacSai{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
 @media (max-height:640px){.kPhim{grid-template-columns:repeat(3,64px);gap:9px 20px}.kPhim button{width:64px;height:64px;font-size:27px}.kCham{margin:10px 0 14px}}
 body.che main,body.che header{visibility:hidden}
-.otien{display:flex;align-items:baseline;gap:6px;margin-top:12px;padding:0 6px}
-#fTien{flex:1;min-width:0;height:58px;border:0;background:none;color:#fff;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;caret-color:#fff}
+.otien{display:flex;align-items:baseline;gap:6px;margin-top:6px;padding:0 6px}
+#fTien{flex:1;min-width:0;height:52px;cursor:default;border:0;background:none;color:#fff;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;caret-color:#fff}
 #fTien::placeholder{color:rgba(255,255,255,.7)}
 #fTien:focus{outline:0}
 .otien span{font-size:20px;font-weight:700}
-.thanhop{padding:12px 14px calc(16px + env(safe-area-inset-bottom))}
+.thanhop{flex:1;min-height:0;overflow:auto;padding:10px 14px 8px}
+/* Ban phim so cua app: gon hon ban phim may, de thay ca hu, ngay va ghi chu */
+.phimTien{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--the);border-radius:20px 20px 0 0;box-shadow:0 -6px 18px rgba(0,80,55,.08)}
+.phimTien button{height:46px;border-radius:13px;background:var(--nen);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.phimTien button:active{background:var(--vien)}
+.phimTien svg{width:26px;height:26px;vertical-align:middle}
+#fForm.goChu .phimTien{display:none}
+@media (max-height:620px){.phimTien button{height:40px;font-size:20px}.nhanh button:not(.so0){display:none}.nhanh:not(:has(.so0)){display:none}}
 .nhanh{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
 .nhanh::-webkit-scrollbar{display:none}
 .nhanh button{flex:none;height:38px;padding:0 13px;border-radius:12px;background:var(--the);font-size:14px;font-weight:550;font-variant-numeric:tabular-nums;box-shadow:var(--bong)}
-.luoi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 12px}
-.luoi button{min-height:82px;padding:8px 4px;border-radius:16px;background:var(--the);font-size:12.5px;font-weight:550;line-height:1.2;overflow-wrap:anywhere;border:2px solid transparent;box-shadow:var(--bong);display:flex;flex-direction:column;align-items:center;gap:5px}
-.luoi button span{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:var(--n)}
+.luoi{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-auto-columns:84px;gap:6px;overflow-x:auto;margin:0 -14px 8px;padding:2px 14px 4px;scrollbar-width:none}
+.luoi::-webkit-scrollbar{display:none}
+.luoi button{min-height:68px;padding:6px 3px;border-radius:16px;background:var(--the);font-size:12.5px;font-weight:550;line-height:1.2;overflow-wrap:anywhere;border:2px solid transparent;box-shadow:var(--bong);display:flex;flex-direction:column;align-items:center;gap:5px}
+.luoi button span{flex:none;width:30px;height:30px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:var(--n)}
 .luoi button.on{border-color:var(--m);font-weight:750;animation:nayIcon .3s var(--nhanh)}
-.hai{display:grid;grid-template-columns:152px 1fr;gap:8px;margin-bottom:12px}
+.hai{display:grid;grid-template-columns:152px 1fr;gap:8px;margin-bottom:8px}
 .hai input{width:100%;height:48px;padding:0 10px;border:1.5px solid var(--vien);border-radius:12px;background:var(--the);font-size:16px;min-width:0}
 .btn.xoa{color:var(--qua);background:#fdecec}
 #fXoa[hidden]{display:none}
@@ -251,7 +260,7 @@ dialog[open] .luoi button:nth-child(3n+2){animation-delay:.04s}
 dialog[open] .luoi button:nth-child(3n){animation-delay:.08s}
 dialog[open] .luoi button.on{animation:nayIcon .3s var(--nhanh)}
 /* Gon song khi cham, hat tung len khi luu */
-.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab{position:relative;overflow:hidden}
+.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab,.phimTien button{position:relative;overflow:hidden}
 .gon{position:absolute;width:12px;height:12px;margin:-6px;border-radius:50%;background:currentColor;opacity:.2;pointer-events:none;animation:gon .5s ease-out forwards}
 .hat{position:fixed;z-index:20;width:10px;height:10px;margin:-5px;border-radius:50%;pointer-events:none;animation:hat .75s var(--nhanh) forwards}
 @keyframes veVong{from{--goc:0deg}to{--goc:360deg}}
@@ -313,7 +322,7 @@ dialog[open] .luoi button.on{animation:nayIcon .3s var(--nhanh)}
       </div>
       <div id="fNhan">Đang sửa khoản này</div>
       <div class="otien">
-        <input id="fTien" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Số tiền">
+        <input id="fTien" readonly inputmode="none" autocomplete="off" placeholder="0" aria-label="Số tiền">
         <span>đ</span>
       </div>
     </div>
@@ -325,6 +334,13 @@ dialog[open] .luoi button.on{animation:nayIcon .3s var(--nhanh)}
         <input id="fGhi" maxlength="200" placeholder="Ghi chú" autocomplete="off" aria-label="Ghi chú">
       </div>
       <button type="button" class="btn xoa rong" id="fXoa" data-lam="xoaKhoan">Xoá khoản này</button>
+    </div>
+    <div class="phimTien" id="fPhim">
+      <button type="button" data-tien="1">1</button><button type="button" data-tien="2">2</button><button type="button" data-tien="3">3</button>
+      <button type="button" data-tien="4">4</button><button type="button" data-tien="5">5</button><button type="button" data-tien="6">6</button>
+      <button type="button" data-tien="7">7</button><button type="button" data-tien="8">8</button><button type="button" data-tien="9">9</button>
+      <button type="button" data-tien="000">000</button><button type="button" data-tien="0">0</button>
+      <button type="button" data-tien="xoa" aria-label="Xoá một số"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7zM12 9.5l5 5M17 9.5l-5 5"/></svg></button>
     </div>
   </form>
 </dialog>

@@ -406,7 +406,7 @@ function tungHat() {
 
 // Gon song tu dung cho ngon tay cham
 document.addEventListener('pointerdown', e => {
-  const el = e.target.closest('.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab');
+  const el = e.target.closest('.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab,.phimTien button');
   if (!el || GIAM.matches) return;
   const r = el.getBoundingClientRect();
   const g = document.createElement('i');
@@ -603,7 +603,14 @@ function moHop(g, loai = 'chi') {
   $('hop').classList.remove('dangdong');
   $('hop').showModal();
   luuTrang('push', { hop: 1 });
-  if (F.moi) $('fTien').focus();
+  const chon = document.querySelector('#fHu .on'); // hu dang chon co the nam ngoai phan dang thay
+  if (chon) chon.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+function phimTien(k) {
+  const o = $('fTien');
+  const so = String(T.docTien(o.value) || '');
+  o.value = k === 'xoa' ? so.slice(0, -1) : so + k;
+  o.dispatchEvent(new Event('input'));
 }
 // Dong hop = lui 1 buoc, nen nut back dien thoai dong hop chu khong thoat app.
 function dongHopMuot() {
@@ -628,12 +635,12 @@ function veHop() {
   const soKhong = '<button type="button" class="so0" data-so0="10">Thêm số 0</button><button type="button" class="so0" data-so0="0.1">Bớt số 0</button>';
   const nhanh = (laChi ? [20, 30, 50, 100, 200, 500] : [1000, 5000, 10000, 20000]).map(k =>
     `<button type="button" data-nhanh="${k * 1000}">${T.hienSo(k * 1000)}</button>`).join('');
-  $('fNhanh').innerHTML = F.moi ? `${nhanh}<button type="button" data-nhan3="1">×1.000</button>${soKhong}` : soKhong + nhanh;
+  $('fNhanh').innerHTML = F.moi ? nhanh : soKhong + nhanh;
 }
 function luuHop() {
   const tien = T.docTien($('fTien').value);
   const ngay = $('fNgay').value;
-  if (!tien) { baoLoi('Bạn chưa nhập số tiền'); $('fTien').focus(); return; }
+  if (!tien) { baoLoi('Bạn chưa nhập số tiền'); return; }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) { baoLoi('Bạn chưa chọn ngày'); return; }
   if (F.loai === 'chi' && !F.hu) { baoLoi('Bạn chưa chọn hũ'); return; }
   const { id, loai, hu } = F;
@@ -721,6 +728,7 @@ document.addEventListener('click', e => {
   const d = el.dataset;
   if (d.lam) LAM[d.lam]();
   else if (d.phim) bamPhim(d.phim);
+  else if (d.tien) phimTien(d.tien);
   else if (d.xoaso) xoaPhim();
   else if (d.tab) moTab(d.tab);
   else if (d.xemhu !== undefined) { tab = 'so'; locHu = d.xemhu; luuTrang('push'); ve(true); scrollTo(0, 0); }
@@ -737,7 +745,6 @@ document.addEventListener('click', e => {
     const n = Math.floor(T.docTien($('fTien').value) * Number(d.so0) + 1e-6);
     if (n) { $('fTien').value = T.hienSo(T.docTien(n)); $('fTien').dispatchEvent(new Event('input')); }
   }
-  else if (d.nhan3) { const n = T.docTien($('fTien').value); if (n) $('fTien').value = T.hienSo(T.docTien(n * 1000)); $('fTien').focus(); }
   else if (d.xoahu) {
     const h = S.hu[d.xoahu];
     ghi('hu', { ...h, xoa: 1 });
@@ -788,10 +795,19 @@ window.addEventListener('hashchange', () => {
   dongBo();
 });
 document.addEventListener('keydown', e => {
-  if ($('khoa').hidden) return;
+  if ($('khoa').hidden) {
+    // Ban phim that tren may tinh, tru luc dang go ghi chu hoac ngay
+    if (!$('hop').open || /fGhi|fNgay/.test(document.activeElement.id)) return;
+    if (/^\d$/.test(e.key)) phimTien(e.key);
+    else if (e.key === 'Backspace') phimTien('xoa');
+    return;
+  }
   if (/^\d$/.test(e.key)) bamPhim(e.key);
   else if (e.key === 'Backspace') xoaPhim();
 });
+// Go ghi chu thi ban phim may hien len, an ban phim so de khong chong hai lop
+$('fGhi').addEventListener('focus', () => $('fForm').classList.add('goChu'));
+$('fGhi').addEventListener('blur', () => $('fForm').classList.remove('goChu'));
 window.addEventListener('online', () => { trangThai.loi = ''; dongBo(); });
 window.addEventListener('storage', e => { if (e.key === KHOA_KHO) { S = docKho(); ve(); } });
 // Roi app thi che so ngay (de khong lo trong man hinh da nhiem); quay lai sau 1 phut phai nhap lai mat ma.
