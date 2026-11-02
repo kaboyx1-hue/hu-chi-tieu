@@ -20,7 +20,8 @@
 :root{--nen:#f2f7f5;--the:#fff;--chu:#17231f;--mo:#62726c;--vien:#e6efeb;
 --c1:#00885a;--c2:#17bd85;--cam:#ff7a1a;--tim:#7c3aed;--lam:#2f80ed;
 --vao:#00885a;--ra:#e8590c;--canh:#e69500;--qua:#e03131;
---bong:0 6px 20px rgba(0,80,55,.08);--nhanh:cubic-bezier(.2,.8,.2,1)}
+--bong:0 6px 20px rgba(0,80,55,.08);--nhanh:cubic-bezier(.2,.8,.2,1);--nay:cubic-bezier(.34,1.56,.64,1)}
+@property --goc{syntax:'<angle>';inherits:false;initial-value:360deg}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--nen);color:var(--chu);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(96px + env(safe-area-inset-bottom));overflow-x:hidden}
@@ -41,10 +42,20 @@ body[data-tab=tq] header{border-radius:0;box-shadow:none}
 .tron{width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;display:grid;place-items:center}
 #dongbo{display:block;width:100%;max-width:540px;margin:0 auto;font-size:12.5px;color:#e4fff4;text-align:center;min-height:18px}
 #dongbo.loi{color:#fff3c4;font-weight:600}
+#dongbo.dang::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#fff;vertical-align:1px;animation:nhip 1s ease-in-out infinite}
 
 /* The so du */
-.hero{margin:-14px -14px 0;padding:6px 18px 46px;background:linear-gradient(180deg,var(--c1),var(--c2));color:#fff;border-radius:0 0 28px 28px}
+.hero{position:relative;overflow:hidden;margin:-14px -14px 0;padding:6px 18px 46px;background:linear-gradient(180deg,var(--c1),var(--c2));color:#fff;border-radius:0 0 28px 28px}
 .hieuung .hero{animation:none}
+.hero>*{position:relative}
+/* Hai vong sang troi cham phia sau so du */
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.26),rgba(255,255,255,0) 68%)}
+.hero::before{width:230px;height:230px;right:-70px;top:-60px;animation:troi 9s ease-in-out infinite alternate}
+.hero::after{width:180px;height:180px;left:-60px;bottom:-40px;animation:troi 12s ease-in-out infinite alternate-reverse}
+.quet{position:absolute!important;top:0;bottom:0;left:0;width:90px;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.28),rgba(255,255,255,0));transform:translateX(-140px) skewX(-18deg);pointer-events:none}
+.hieuung .quet{animation:quet 1.3s ease-out .35s}
+.mat{transition:transform .25s var(--nay)}
+.mat:active{transform:scale(.8) rotate(-12deg)}
 .chao{font-size:14px;opacity:.95}
 .dongso{display:flex;align-items:center;gap:6px;margin-top:2px}
 .solon{font-size:36px;font-weight:800;letter-spacing:-.5px;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
@@ -87,7 +98,13 @@ body[data-tab=tq] header{border-radius:0;box-shadow:none}
 
 /* Hu */
 .hu{display:flex;gap:11px;width:100%;text-align:left;padding:10px 0}
-.oh{width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:21px;background:var(--n)}
+.oh{position:relative;overflow:hidden;width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:21px;background:var(--n)}
+/* Hu dang day: mat nuoc lan song dang len theo so da chi */
+.song{position:absolute;left:-55%;width:210%;height:210%;top:calc(100% - var(--p)*1%);background:var(--m);opacity:.3;border-radius:43%;animation:quay 7s linear infinite}
+.hieuung .song{animation:quay 7s linear infinite,dangNuoc 1s var(--nhanh) both}
+.oh b{position:relative;font-weight:400}
+.hu.vuot .oh{animation:rung .5s ease-in-out .7s}
+.hu.vuot .vach i{box-shadow:0 0 8px rgba(224,49,49,.55)}
 .hugiua{flex:1;min-width:0}
 .huhang{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .huten{font-weight:650;min-width:0;overflow-wrap:anywhere}
@@ -135,7 +152,14 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--the);paddi
 .tab svg{width:24px;height:24px}
 .tab.on{color:var(--c1);font-weight:700}
 .tab.on svg{animation:nayIcon .35s var(--nhanh)}
-#them{width:62px;height:62px;border-radius:50%;margin:-26px auto 0;background:linear-gradient(135deg,#ffa04d,var(--cam));color:#fff;font-size:34px;line-height:1;box-shadow:0 8px 18px rgba(255,122,26,.45)}
+.navtrong{position:relative}
+.tab{position:relative;z-index:1}
+#viTri{position:absolute;top:9px;left:0;width:54px;height:32px;border-radius:16px;background:#dcf6ec;transition:transform .42s var(--nay)}
+#them{position:relative;z-index:1;width:62px;height:62px;border-radius:50%;margin:-26px auto 0;background:linear-gradient(135deg,#ffb066,var(--cam));color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px rgba(255,122,26,.42);animation:nayVao .5s var(--nay) .2s both}
+#them::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--cam);z-index:-1;animation:toaRa 3.4s ease-out infinite}
+#them svg{width:32px;height:32px;transition:transform .35s var(--nay)}
+#them:active{transform:scale(.88)}
+#them:active svg{transform:rotate(90deg)}
 
 /* Man nhap khoan: tran man hinh, truot len. So tien o tren cung nen ban phim khong che */
 dialog{border:0;padding:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;background:var(--nen);color:var(--chu);overflow:auto}
@@ -147,9 +171,11 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 #fForm.thu .dauhop{background:linear-gradient(180deg,#5b21b6,var(--tim))}
 #fForm.chi .dauhop{background:linear-gradient(180deg,#e8590c,#ff8f3f)}
 .hanghop{display:flex;align-items:center;gap:6px}
-.chon2{flex:1;display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.22);border-radius:14px;padding:3px}
-.chon2 button{height:38px;border-radius:11px;font-weight:650;color:#fff}
-.chon2 button.on{background:#fff;color:var(--chu)}
+.chon2{position:relative;flex:1;display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.22);border-radius:14px;padding:3px}
+.chon2::before{content:"";position:absolute;left:3px;top:3px;bottom:3px;width:calc(50% - 3px);background:#fff;border-radius:11px;transition:transform .34s var(--nay)}
+#fForm.thu .chon2::before{transform:translateX(100%)}
+.chon2 button{position:relative;height:38px;border-radius:11px;font-weight:650;color:#fff;transition:color .2s,transform .14s}
+.chon2 button.on{color:var(--chu)}
 .luu{height:44px;padding:0 18px;border-radius:14px;background:#fff;color:var(--chu);font-weight:750}
 .otien{display:flex;align-items:baseline;gap:6px;margin-top:12px;padding:0 6px}
 #fTien{flex:1;min-width:0;height:58px;border:0;background:none;color:#fff;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;caret-color:#fff}
@@ -184,7 +210,38 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 .hieuung>:nth-child(n+5){animation-delay:.2s}
 .hieuung .vach i{animation:keoNgang .7s var(--nhanh) .15s both}
 .hieuung .cot i{animation:keoDoc .55s var(--nhanh) .1s both}
-.hieuung .vongtron{animation:quayVao .6s var(--nhanh) .1s both}
+/* Vong tron ve dan theo chieu kim dong ho */
+.hieuung .vongtron{-webkit-mask:conic-gradient(#000 var(--goc),transparent 0);mask:conic-gradient(#000 var(--goc),transparent 0);animation:veVong 1s var(--nhanh) .1s both}
+.hieuung .nhanhbon button span{animation:nayVao .45s var(--nay) both}
+.hieuung .nhanhbon button:nth-child(2) span{animation-delay:.06s}
+.hieuung .nhanhbon button:nth-child(3) span{animation-delay:.12s}
+.hieuung .nhanhbon button:nth-child(4) span{animation-delay:.18s}
+.hieuung .dong{animation:vaoDong .34s var(--nhanh) both}
+.hieuung .dong:nth-child(2){animation-delay:.04s}
+.hieuung .dong:nth-child(3){animation-delay:.08s}
+.hieuung .dong:nth-child(4){animation-delay:.12s}
+.hieuung .dong:nth-child(n+5){animation-delay:.16s}
+.hieuung .hang{animation:vaoDong .3s var(--nhanh) both}
+dialog[open] .luoi button{animation:nayVao .34s var(--nay) both}
+dialog[open] .luoi button:nth-child(3n+2){animation-delay:.04s}
+dialog[open] .luoi button:nth-child(3n){animation-delay:.08s}
+dialog[open] .luoi button.on{animation:nayIcon .3s var(--nhanh)}
+/* Gon song khi cham, hat tung len khi luu */
+.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab{position:relative;overflow:hidden}
+.gon{position:absolute;width:12px;height:12px;margin:-6px;border-radius:50%;background:currentColor;opacity:.2;pointer-events:none;animation:gon .5s ease-out forwards}
+.hat{position:fixed;z-index:20;width:10px;height:10px;margin:-5px;border-radius:50%;pointer-events:none;animation:hat .75s var(--nhanh) forwards}
+@keyframes veVong{from{--goc:0deg}to{--goc:360deg}}
+@keyframes quay{to{transform:rotate(360deg)}}
+@keyframes dangNuoc{from{top:100%}}
+@keyframes troi{to{transform:translate(-26px,20px) scale(1.15)}}
+@keyframes quet{to{transform:translateX(480px) skewX(-18deg)}}
+@keyframes toaRa{0%{opacity:.4;transform:scale(1)}55%,100%{opacity:0;transform:scale(1.5)}}
+@keyframes nayVao{from{opacity:0;transform:scale(.5)}}
+@keyframes vaoDong{from{opacity:0;transform:translateX(18px)}}
+@keyframes rung{20%,60%{transform:translateX(-3px) rotate(-3deg)}40%,80%{transform:translateX(3px) rotate(3deg)}}
+@keyframes nhip{50%{opacity:.3;transform:scale(.7)}}
+@keyframes gon{to{opacity:0;transform:scale(26)}}
+@keyframes hat{to{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
 @keyframes vao{from{opacity:0;transform:translate(var(--dx,0),var(--dy,12px))}}
 @keyframes keoNgang{from{transform:scaleX(0)}}
 @keyframes keoDoc{from{transform:scaleY(0)}}
@@ -210,9 +267,10 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 <main id="trang"></main>
 <nav>
   <div class="navtrong">
+    <i id="viTri"></i>
     <button class="tab" data-tab="tq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Trang chủ</button>
     <button class="tab" data-tab="so"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9 8h6M9 12h6"/></svg>Sổ</button>
-    <button id="them" data-lam="themMoi" aria-label="Thêm khoản mới">+</button>
+    <button id="them" data-lam="themMoi" aria-label="Thêm khoản mới"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></svg></button>
     <button class="tab" data-tab="hu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v3l2 3v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9l2-3zM6.5 13h11"/></svg>Các hũ</button>
     <button class="tab" data-tab="nam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 10h16M8 3v4M16 3v4"/></svg>Cả năm</button>
   </div>

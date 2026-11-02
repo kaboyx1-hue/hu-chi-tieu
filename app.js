@@ -26,7 +26,8 @@ let tab = 'tq', thang = T.thangCua(T.homNay()), locHu = '';
 let F = null; // khoan dang mo trong hop them/sua
 let trangThai = { dang: false, loi: '', luc: 0 };
 let huong = 0; // -1/1: truot sang trai/phai khi doi thang
-let soCu = 0;  // so du dang hien, de chay so tu do toi so moi
+const SO_CU = {}; // so dang hien, de chay so tu do toi so moi
+const GIAM = matchMedia('(prefers-reduced-motion:reduce)'); // may dat giam chuyen dong
 let anSo = false;
 try { anSo = localStorage.getItem('hct_an') === '1'; } catch (e) { /* khong doc duoc thi hien so */ }
 
@@ -127,7 +128,7 @@ async function dongBo() {
 function veDongBo() {
   const el = $('dongbo');
   const cho = Object.keys(S.ban).length;
-  el.className = trangThai.loi ? 'loi' : '';
+  el.className = trangThai.loi ? 'loi' : trangThai.dang ? 'dang' : '';
   if (!S.lk) el.textContent = 'Chỉ lưu trên máy này. Hãy mở bằng link riêng để dùng sổ chung';
   else if (trangThai.loi) el.textContent = `${trangThai.loi}${cho ? ` · ${cho} mục chờ gửi` : ''}`;
   else if (trangThai.dang) el.textContent = 'Đang đồng bộ…';
@@ -190,32 +191,70 @@ function ve(hieuUng) {
   huong = 0;
   tr.innerHTML = { tq: veTongQuan, so: veSo, hu: veHu, nam: veNam }[tab]();
   capNhatLui();
+  dichViTri();
   veDongBo();
   chaySo();
 }
 
-// So du chay dan tu so cu toi so moi. Chi chay khi so that su doi.
+// Cac so tien chay dan tu so cu toi so moi. Chi chay khi so that su doi.
 let henSo = 0, henChot = 0;
+const oSo = (khoa, n) => `<span data-so="${n}" data-khoa="${khoa}">${T.hienTien(SO_CU[khoa] || 0)}</span>`;
 function chaySo() {
-  const el = $('soDu');
-  if (!el || anSo) return;
-  const toi = Number(el.dataset.so);
-  const tu = soCu;
-  soCu = toi;
   cancelAnimationFrame(henSo);
   clearTimeout(henChot);
-  if (tu === toi || matchMedia('(prefers-reduced-motion:reduce)').matches) { el.textContent = T.hienTien(toi); return; }
+  const ds = [...document.querySelectorAll('[data-so]')].map(el => {
+    const k = el.dataset.khoa;
+    const m = { el, tu: SO_CU[k] || 0, toi: Number(el.dataset.so) };
+    SO_CU[k] = m.toi;
+    return m;
+  });
+  const chot = () => ds.forEach(m => { m.el.textContent = T.hienTien(m.toi); });
+  if (GIAM.matches || ds.every(m => m.tu === m.toi)) { chot(); return; }
   // Trinh duyet co the dung khung hinh khi app bi che; so tien hien ra khong bao gio duoc ket o so cu.
-  henChot = setTimeout(() => { cancelAnimationFrame(henSo); el.textContent = T.hienTien(toi); }, 800);
+  henChot = setTimeout(() => { cancelAnimationFrame(henSo); chot(); }, 850);
   const dau = performance.now();
   const buoc = t => {
-    const p = Math.min(1, (t - dau) / 650);
-    const gt = tu + (toi - tu) * (1 - (1 - p) ** 3);
-    el.textContent = T.hienTien(p < 1 ? Math.round(gt) : toi);
+    const p = Math.min(1, (t - dau) / 700);
+    const e = 1 - (1 - p) ** 3;
+    for (const m of ds) m.el.textContent = T.hienTien(p < 1 ? Math.round(m.tu + (m.toi - m.tu) * e) : m.toi);
     if (p < 1) henSo = requestAnimationFrame(buoc);
   };
   henSo = requestAnimationFrame(buoc);
 }
+
+// Vien sang duoi thanh tab truot toi muc dang mo
+function dichViTri() {
+  const el = document.querySelector('.tab.on');
+  if (el) $('viTri').style.transform = `translateX(${el.offsetLeft + el.offsetWidth / 2 - 27}px)`;
+}
+window.addEventListener('resize', dichViTri);
+
+// Hat mau tung ra tu nut dau cong khi luu thanh cong
+function tungHat() {
+  if (GIAM.matches) return;
+  const r = $('them').getBoundingClientRect();
+  for (let i = 0; i < 14; i++) {
+    const h = document.createElement('i');
+    const goc = i / 14 * Math.PI * 2 + Math.random() * .3;
+    const xa = 70 + Math.random() * 70;
+    h.className = 'hat';
+    h.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;background:${MAU[i % MAU.length]};--x:${Math.cos(goc) * xa}px;--y:${Math.sin(goc) * xa - 50}px`;
+    h.addEventListener('animationend', () => h.remove());
+    document.body.appendChild(h);
+  }
+}
+
+// Gon song tu dung cho ngon tay cham
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.dong,.loc,.btn,.luoi button,.nhanh button,.hu,.tab');
+  if (!el || GIAM.matches) return;
+  const r = el.getBoundingClientRect();
+  const g = document.createElement('i');
+  g.className = 'gon';
+  g.style.cssText = `left:${e.clientX - r.left}px;top:${e.clientY - r.top}px`;
+  g.addEventListener('animationend', () => g.remove());
+  el.appendChild(g);
+});
 
 // Dong bo chay ngam: dang go trong o nao thi khong ve lai, tranh mat chu dang go.
 function veAnToan() {
@@ -232,8 +271,9 @@ function veTheHu(h) {
     dong2 = `<div class="vach"><i class="${lop}" style="width:${Math.min(100, h.tile * 100)}%"></i></div>
       <div class="huphu ${h.con < 0 ? 'qua' : ''}">${h.con < 0 ? 'Vượt ' + T.hienTien(-h.con) : 'Còn ' + T.hienTien(h.con)}</div>`;
   }
-  return `<button class="hu" style="${bienMau(h.id)}" data-xemhu="${esc(h.id)}">
-    <span class="oh">${esc(h.icon)}</span>
+  const muc = h.han ? Math.min(100, Math.round(h.tile * 100)) : 0;
+  return `<button class="hu ${h.con < 0 && h.han ? 'vuot' : ''}" style="${bienMau(h.id)};--p:${muc}" data-xemhu="${esc(h.id)}">
+    <span class="oh">${muc ? '<i class="song"></i>' : ''}<b>${esc(h.icon)}</b></span>
     <span class="hugiua" style="display:block"><div class="huhang"><span class="huten">${esc(h.ten)}</span>
     <span class="huso">${T.hienTien(h.chi)}${h.han ? ' / ' + T.hienSo(h.han) : ''}</span></div>${dong2}</span></button>`;
 }
@@ -295,15 +335,16 @@ function veTongQuan() {
     .sort((x, y) => y.ngay.localeCompare(x.ngay) || y.sua - x.sua).slice(0, 4);
 
   return `<section class="hero">
+      <i class="quet"></i>
       <div class="chao">${b.laHienTai ? loiChao() + ', tiền đang có' : 'Tiền cuối tháng'}</div>
       <div class="dongso">
-        <div class="solon" id="soDu" data-so="${b.duCuoi}">${anSo ? CHE : T.hienTien(soCu)}</div>
+        <div class="solon" id="soDu">${anSo ? CHE : oSo('du', b.duCuoi)}</div>
         <button class="mat" data-lam="anHienSo" aria-label="${anSo ? 'Hiện số tiền' : 'Ẩn số tiền'}">${anSo ? ICON.dong : ICON.mo}</button>
       </div>
       <div class="phu2">Tháng trước sang: ${anSo ? CHE : T.hienTien(b.duDau)}</div>
       <div class="cap">
-        <div>Tiền vào<b>${anSo ? CHE : T.hienTien(b.thu)}</b></div>
-        <div>Đã chi<b>${anSo ? CHE : T.hienTien(b.chi)}</b></div>
+        <div>Tiền vào<b>${anSo ? CHE : oSo('thu', b.thu)}</b></div>
+        <div>Đã chi<b>${anSo ? CHE : oSo('chi', b.chi)}</b></div>
       </div>
     </section>
     <section class="nhanhbon">
@@ -408,7 +449,7 @@ function dongHopThat() {
   const h = $('hop');
   if (!h.open || h.classList.contains('dangdong')) return;
   h.classList.add('dangdong');
-  setTimeout(() => { h.close(); h.classList.remove('dangdong'); }, matchMedia('(prefers-reduced-motion:reduce)').matches ? 0 : 200);
+  setTimeout(() => { h.close(); h.classList.remove('dangdong'); }, GIAM.matches ? 0 : 200);
 }
 function veHop() {
   document.querySelectorAll('.chon2 button').forEach(b => b.classList.toggle('on', b.dataset.loai === F.loai));
@@ -433,6 +474,8 @@ function luuHop() {
   thang = T.thangCua(ngay);
   ve(true);
   bao(`Đã lưu ${T.hienTien(tien)}`);
+  tungHat();
+  if (navigator.vibrate) navigator.vibrate(12);
 }
 
 // ---- Thong bao ----
@@ -501,7 +544,10 @@ document.addEventListener('click', e => {
   else if (d.sua) moHop(S.gd[d.sua]);
   else if (d.thang) { thang = d.thang; tab = 'tq'; luuTrang('push'); ve(true); scrollTo(0, 0); }
   else if (d.loai) { F.loai = d.loai; veHop(); }
-  else if (d.chonhu) { F.hu = d.chonhu; veHop(); }
+  else if (d.chonhu) { // khong ve lai ca luoi, tranh chay lai hieu ung cua moi o
+    F.hu = d.chonhu;
+    document.querySelectorAll('#fHu button').forEach(b => b.classList.toggle('on', b.dataset.chonhu === F.hu));
+  }
   else if (d.nhanh) { $('fTien').value = T.hienSo(d.nhanh); }
   else if (d.nhan3) { const n = T.docTien($('fTien').value); if (n) $('fTien').value = T.hienSo(T.docTien(n * 1000)); $('fTien').focus(); }
   else if (d.xoahu) {
@@ -516,7 +562,11 @@ $('fForm').addEventListener('submit', e => { e.preventDefault(); luuHop(); });
 $('hop').addEventListener('cancel', e => { e.preventDefault(); dongHopMuot(); });
 // Trinh duyet tu dong hop (nut back Android) ma chua lui buoc thi lui not
 $('hop').addEventListener('close', () => { if (history.state && history.state.hop) history.back(); });
-$('fTien').addEventListener('input', e => { const n = T.docTien(e.target.value); e.target.value = n ? T.hienSo(n) : ''; });
+$('fTien').addEventListener('input', e => {
+  const n = T.docTien(e.target.value);
+  e.target.value = n ? T.hienSo(n) : '';
+  if (!GIAM.matches) e.target.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }], { duration: 130 });
+});
 
 // Ban o Cac hu: luu khi roi o, khong ve lai luc dang go de khong mat con tro.
 $('trang').addEventListener('input', e => {
