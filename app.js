@@ -153,7 +153,7 @@ function ve(hieuUng) {
 }
 
 // So du chay dan tu so cu toi so moi. Chi chay khi so that su doi.
-let henSo = 0;
+let henSo = 0, henChot = 0;
 function chaySo() {
   const el = $('soDu');
   if (!el || anSo) return;
@@ -161,7 +161,10 @@ function chaySo() {
   const tu = soCu;
   soCu = toi;
   cancelAnimationFrame(henSo);
+  clearTimeout(henChot);
   if (tu === toi || matchMedia('(prefers-reduced-motion:reduce)').matches) { el.textContent = T.hienTien(toi); return; }
+  // Trinh duyet co the dung khung hinh khi app bi che; so tien hien ra khong bao gio duoc ket o so cu.
+  henChot = setTimeout(() => { cancelAnimationFrame(henSo); el.textContent = T.hienTien(toi); }, 800);
   const dau = performance.now();
   const buoc = t => {
     const p = Math.min(1, (t - dau) / 650);
