@@ -456,7 +456,8 @@ function dongHtml(g) {
   return `<button class="dong" data-sua="${esc(g.id)}">
     <span class="oh" style="${mau}">${thu ? '💰' : esc(h ? h.icon : '❔')}</span>
     <span class="giua"><div class="ten">${esc(g.ghi || ten)}</div>${g.ghi ? `<div class="phu">${esc(ten)}</div>` : ''}</span>
-    <span class="tien ${thu ? 'vao' : ''}">${thu ? '+' : '−'}${T.hienSo(g.tien)}</span></button>`;
+    <span class="tien ${thu ? 'vao' : ''}">${thu ? '+' : '−'}${T.hienSo(g.tien)}</span>
+    <svg class="but" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg></button>`;
 }
 
 function loiChao() {
@@ -596,6 +597,7 @@ function moHop(g, loai = 'chi') {
   $('fNgay').value = F.ngay;
   $('fGhi').value = F.ghi;
   $('fXoa').hidden = !!F.moi;
+  $('fNhan').hidden = !!F.moi;
   veHop();
   document.querySelector('.luu').classList.toggle('san', !!F.tien);
   $('hop').classList.remove('dangdong');
@@ -611,6 +613,7 @@ function dongHopMuot() {
 function dongHopThat() {
   const h = $('hop');
   if (!h.open || h.classList.contains('dangdong')) return;
+  document.body.appendChild($('toast')); // thong bao dang nam trong hop thi phai ra ngoai truoc khi hop dong
   h.classList.add('dangdong');
   setTimeout(() => { h.close(); h.classList.remove('dangdong'); }, GIAM.matches ? 0 : 200);
 }
@@ -622,8 +625,10 @@ function veHop() {
   // Khoan cu thuoc hu da xoa van hien hu do, tranh luu lai bi doi hu am tham.
   $('fHu').innerHTML = laChi ? dsHu().filter(h => !h.xoa || h.id === F.hu).map(h =>
     `<button type="button" class="${h.id === F.hu ? 'on' : ''}" style="${bienMau(h.id)}" data-chonhu="${esc(h.id)}"><span>${esc(h.icon)}</span>${esc(h.ten)}</button>`).join('') : '';
-  $('fNhanh').innerHTML = (laChi ? [20, 30, 50, 100, 200, 500] : [1000, 5000, 10000, 20000]).map(k =>
-    `<button type="button" data-nhanh="${k * 1000}">${T.hienSo(k * 1000)}</button>`).join('') + '<button type="button" data-nhan3="1">×1.000</button>';
+  const soKhong = '<button type="button" class="so0" data-so0="10">Thêm số 0</button><button type="button" class="so0" data-so0="0.1">Bớt số 0</button>';
+  const nhanh = (laChi ? [20, 30, 50, 100, 200, 500] : [1000, 5000, 10000, 20000]).map(k =>
+    `<button type="button" data-nhanh="${k * 1000}">${T.hienSo(k * 1000)}</button>`).join('');
+  $('fNhanh').innerHTML = F.moi ? `${nhanh}<button type="button" data-nhan3="1">×1.000</button>${soKhong}` : soKhong + nhanh;
 }
 function luuHop() {
   const tien = T.docTien($('fTien').value);
@@ -632,21 +637,28 @@ function luuHop() {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) { baoLoi('Bạn chưa chọn ngày'); return; }
   if (F.loai === 'chi' && !F.hu) { baoLoi('Bạn chưa chọn hũ'); return; }
   const { id, loai, hu } = F;
+  const cu = S.gd[id];
   ghi('gd', { id, loai, hu: loai === 'chi' ? hu : '', tien, ngay, ghi: $('fGhi').value.trim(), xoa: 0 });
   dongHopMuot();
   thang = T.thangCua(ngay);
   ve(true);
-  bao(`Đã lưu ${T.hienTien(tien)}`);
-  tungHat();
+  if (cu) {
+    const chu = cu.tien === tien ? 'Đã lưu thay đổi' : `Đã sửa ${T.hienTien(cu.tien)} thành ${T.hienTien(tien)}`;
+    bao(chu, () => { ghi('gd', { ...S.gd[id], ...cu }); thang = T.thangCua(cu.ngay); ve(true); });
+  } else {
+    // Vua luu ma thay bam nham thi sua ngay tai cho, khoi phai tim trong So
+    bao(`Đã lưu ${T.hienTien(tien)}`, () => moHop(S.gd[id]), false, 'Sửa');
+    tungHat();
+  }
   if (navigator.vibrate) navigator.vibrate(12);
 }
 
 // ---- Thong bao ----
 let henToast = 0;
-function bao(chu, hoanTac, loi) {
+function bao(chu, hoanTac, loi, nhanNut = 'Hoàn tác') {
   const t = $('toast');
   t.className = loi ? 'loi' : '';
-  t.innerHTML = `<i class="dau">${loi ? '!' : '✓'}</i><span>${esc(chu)}</span>` + (hoanTac ? '<button data-lam="hoanTac">Hoàn tác</button>' : '');
+  t.innerHTML = `<i class="dau">${loi ? '!' : '✓'}</i><span>${esc(chu)}</span>` + (hoanTac ? `<button data-lam="hoanTac">${nhanNut}</button>` : '');
   t.hidden = false;
   // Hop nhap la lop tren cung, thong bao phai vao trong hop moi nhin thay
   ($('hop').open && !$('hop').classList.contains('dangdong') ? $('hop') : document.body).appendChild(t);
@@ -721,6 +733,10 @@ document.addEventListener('click', e => {
     document.querySelectorAll('#fHu button').forEach(b => b.classList.toggle('on', b.dataset.chonhu === F.hu));
   }
   else if (d.nhanh) { $('fTien').value = T.hienSo(d.nhanh); }
+  else if (d.so0) {
+    const n = Math.floor(T.docTien($('fTien').value) * Number(d.so0) + 1e-6);
+    if (n) { $('fTien').value = T.hienSo(T.docTien(n)); $('fTien').dispatchEvent(new Event('input')); }
+  }
   else if (d.nhan3) { const n = T.docTien($('fTien').value); if (n) $('fTien').value = T.hienSo(T.docTien(n * 1000)); $('fTien').focus(); }
   else if (d.xoahu) {
     const h = S.hu[d.xoahu];
