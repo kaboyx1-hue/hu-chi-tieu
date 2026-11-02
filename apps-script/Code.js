@@ -63,7 +63,7 @@ function xuLy_(goi) {
         const i = viTri[r.id];
         if (i !== undefined && hang[i].sua > r.sua) continue; // ban tren Sheet moi hon
         const moi = Object.assign({}, r, { rev: ++rev });
-        const dong = cot.map(c => (moi[c] === undefined ? '' : moi[c]));
+        const dong = cot.map(c => giaTriO_(b, c, moi[c]));
         if (i !== undefined) {
           sh.getRange(i + 2, 1, 1, cot.length).setValues([dong]);
           hang[i] = moi;
@@ -82,6 +82,13 @@ function xuLy_(goi) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Dinh dang chu thuan khong du: Sheets that van tinh "=1+1" thanh 2 va nuot dau ' o dau.
+// Them mot dau ' phia truoc thi Sheets giu nguyen van va khong luu dau nay.
+function giaTriO_(b, c, v) {
+  if (v === undefined) return '';
+  return BANG[b].chu.includes(c) && /^[=+\-@']/.test(v) ? "'" + v : v;
 }
 
 function hopLe_(m) {
@@ -120,8 +127,7 @@ function bangCua_(b) {
 
   sh.getRange(1, 1, 1, cot.length).setValues([cot]).setFontWeight('bold');
   sh.setFrozenRows(1);
-  // Dinh dang chu thuan: Sheets khong tu doi "2026-11-01" thanh ngay,
-  // va ghi chu bat dau bang dau = khong bi hieu thanh cong thuc.
+  // Dinh dang chu thuan: Sheets khong tu doi "2026-11-01" thanh ngay.
   dinhDangChu_(sh, b, 1, sh.getMaxRows());
   return sh;
 }

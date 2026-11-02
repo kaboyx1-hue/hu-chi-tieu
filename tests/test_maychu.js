@@ -27,10 +27,14 @@ function dungMoiTruong() {
               const hang = h + i - 1;
               while (t.luoi.length <= hang) t.luoi.push([]);
               let gt = x;
-              if (typeof x === 'string' && !t.chu[`${h + i}:${c + j}`]) {
-                if (/^\d{4}-\d{2}-\d{2}$/.test(x)) gt = new Date(x);
-                else if (/^\d+$/.test(x)) gt = Number(x);
+              if (typeof x === 'string') {
+                // Da doi chieu voi Sheet that 02/11/2026: dinh dang chu van bi tinh cong thuc va nuot dau '
+                if (x.startsWith("'")) gt = x.slice(1);
                 else if (x.startsWith('=')) gt = '#FORMULA';
+                else if (!t.chu[`${h + i}:${c + j}`]) {
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(x)) gt = new Date(x);
+                  else if (/^\d+$/.test(x)) gt = Number(x);
+                }
               }
               t.luoi[hang][c + j - 1] = gt;
             }));
@@ -108,12 +112,13 @@ test('hai may: may A ghi, may B keo ve dung', () => {
 
 test('Sheets khong lam hong ngay, ghi chu toan so, ghi chu bat dau bang dau =', () => {
   const { goi } = dungMoiTruong();
-  goi({ k: K, tu: 0, thay: [gd('1', 1, 1000, { ghi: '=1+1' }), gd('2', 1, 1000, { ghi: '0123' }), { b: 'hm', r: { id: 'an_2026-11', hu: 'an', tu: '2026-11', tien: 0, sua: 1, xoa: 0 } }] });
+  goi({ k: K, tu: 0, thay: [gd('1', 1, 1000, { ghi: '=1+1' }), gd('2', 1, 1000, { ghi: '0123' }), gd('3', 1, 1000, { ghi: "'nhay" }), { b: 'hm', r: { id: 'an_2026-11', hu: 'an', tu: '2026-11', tien: 0, sua: 1, xoa: 0 } }] });
   const ds = goi({ k: K, tu: 0, thay: [] }).ds;
   const r = id => ds.find(m => m.r.id === id).r;
   assert.equal(r('1').ngay, '2026-11-01');
   assert.equal(r('1').ghi, '=1+1');
   assert.equal(r('2').ghi, '0123');
+  assert.equal(r('3').ghi, "'nhay");
   assert.equal(r('an_2026-11').tu, '2026-11');
   assert.equal(r('an_2026-11').tien, 0);
 });
