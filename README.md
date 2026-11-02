@@ -16,6 +16,8 @@ Sổ theo dõi sinh hoạt phí theo tháng, dùng chủ yếu trên điện tho
 
 Repo này công khai và **không chứa dữ liệu nào**. Số tiền nằm trong Google Sheet riêng, mỗi máy giữ thêm một bản để dùng khi mất mạng. Địa chỉ máy chủ và khoá nằm sau dấu `#` của link riêng, trình duyệt không gửi phần đó lên GitHub. Lộ link riêng là lộ sổ.
 
+Ngoài link riêng còn mật mã 6 số do chủ sổ tự đặt: máy chủ chỉ giữ bản băm, không có mật mã thì link không đọc ghi được gì, sai 5 lần bị khoá 15 phút và thời gian khoá tăng dần. Quên mật mã: chạy hàm `xoaPin` trong Apps Script, số liệu không mất. Dữ liệu lưu sẵn trên máy không được mã hoá, mật mã ở máy chỉ che màn hình.
+
 Đổi khoá khi nghi lộ: trong Apps Script, xoá thuộc tính `KHOA` ở Project Settings → Script Properties, rồi mở link riêng mới.
 
 ## Phát hành
