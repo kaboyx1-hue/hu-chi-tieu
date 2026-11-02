@@ -1,6 +1,6 @@
 // Cho phep mo app khi mat mang. Co mang thi luon lay ban moi; mang yeu qua 2,5 giay thi dung ban da luu.
-const KHO = 'hct-3';
-const TEP = ['./', 'index.html', 'app.js', 'tinh.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const KHO = 'hct-4';
+const TEP = ['./', 'app.js', 'tinh.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(KHO).then(c => c.addAll(TEP)).then(() => self.skipWaiting()));
