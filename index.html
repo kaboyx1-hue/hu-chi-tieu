@@ -176,7 +176,27 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 #fForm.thu .chon2::before{transform:translateX(100%)}
 .chon2 button{position:relative;height:38px;border-radius:11px;font-weight:650;color:#fff;transition:color .2s,transform .14s}
 .chon2 button.on{color:var(--chu)}
-.luu{height:44px;padding:0 18px;border-radius:14px;background:#fff;color:var(--chu);font-weight:750}
+.luu{height:44px;padding:0 20px;border-radius:14px;background:#06563b;color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(0,50,35,.4)}
+.luu.san{animation:moiLuu 1.5s ease-in-out infinite}
+@keyframes moiLuu{50%{box-shadow:0 0 0 7px rgba(255,255,255,.35)}}
+/* Man mat ma kieu iPhone */
+#khoa{position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,var(--c1),var(--c2));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));text-align:center;overflow:auto}
+#khoa[hidden]{display:none}
+#khoa h2{margin:0;font-size:21px;font-weight:700}
+#kChu{min-height:42px;margin:6px 0 0;font-size:14px;max-width:320px}
+.kCham{display:flex;gap:16px;margin:16px 0 26px}
+.kCham i{width:15px;height:15px;border-radius:50%;border:2px solid #fff;transition:background .12s,transform .2s var(--nay)}
+.kCham i.day{background:#fff;transform:scale(1.15)}
+.kCham.sai{animation:lacSai .42s ease-in-out}
+.kPhim{display:grid;grid-template-columns:repeat(3,76px);gap:14px 22px}
+.kPhim button{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:31px;font-weight:500;transition:background .15s,transform .12s var(--nay)}
+.kPhim button:active{background:rgba(255,255,255,.55);transform:scale(.93)}
+.kPhim .trong{background:none;font-size:15px;font-weight:600}
+.kPhim .trong:active{background:none}
+#kPhu{margin-top:18px;min-height:40px;padding:8px 14px;color:#fff;font-size:14px;font-weight:600}
+@keyframes lacSai{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+@media (max-height:640px){.kPhim{grid-template-columns:repeat(3,64px);gap:9px 20px}.kPhim button{width:64px;height:64px;font-size:27px}.kCham{margin:10px 0 14px}}
+body.che main,body.che header{visibility:hidden}
 .otien{display:flex;align-items:baseline;gap:6px;margin-top:12px;padding:0 6px}
 #fTien{flex:1;min-width:0;height:58px;border:0;background:none;color:#fff;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;caret-color:#fff}
 #fTien::placeholder{color:rgba(255,255,255,.7)}
@@ -304,6 +324,18 @@ dialog[open] .luoi button.on{animation:nayIcon .3s var(--nhanh)}
   </form>
 </dialog>
 <div id="toast" hidden role="status"></div>
+<section id="khoa" hidden aria-label="Mật mã">
+  <h2 id="kTieuDe"></h2>
+  <p id="kChu" role="status"></p>
+  <div class="kCham" id="kCham"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="kPhim" id="kPhim">
+    <button data-phim="1">1</button><button data-phim="2">2</button><button data-phim="3">3</button>
+    <button data-phim="4">4</button><button data-phim="5">5</button><button data-phim="6">6</button>
+    <button data-phim="7">7</button><button data-phim="8">8</button><button data-phim="9">9</button>
+    <span></span><button data-phim="0">0</button><button class="trong" data-xoaso="1" aria-label="Xoá một số">Xoá</button>
+  </div>
+  <button id="kPhu"></button>
+</section>
 <script src="tinh.js"></script>
 <script src="app.js"></script>
 </body>

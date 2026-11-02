@@ -36,6 +36,22 @@ function xuLy_(goi) {
     if (!daCo) kho.setProperty('KHOA', khoa); // link rieng dau tien mo so; ai khac khong biet dia chi nay
     else if (daCo !== khoa) return { ok: false, loi: 'khoa' };
 
+    // Mat ma: link rieng thoi chua du, phai co "the" duoc cap sau khi nhap dung mat ma.
+    const pin = kho.getProperty('PIN');
+    if (goi.hoiPin) return { ok: true, coPin: !!pin };
+    if (goi.datPin !== undefined) {
+      if (pin) return { ok: false, loi: 'da co mat ma' };
+      if (!pinHopLe_(goi.datPin)) return { ok: false, loi: 'mat ma phai du 6 so' };
+      return { ok: true, the: luuPin_(kho, goi.datPin) };
+    }
+    if (goi.pin !== undefined) return thuPin_(kho, goi.pin, pin);
+    if (pin && goi.the !== theCua_(pin)) return { ok: false, loi: 'pin' };
+    if (goi.pinMoi !== undefined) {
+      if (!pinHopLe_(goi.pinMoi)) return { ok: false, loi: 'mat ma phai du 6 so' };
+      const cu = thuPin_(kho, goi.pinCu, pin);
+      return cu.ok ? { ok: true, the: luuPin_(kho, goi.pinMoi) } : cu;
+    }
+
     const thay = Array.isArray(goi.thay) ? goi.thay : [];
     if (thay.length > TOI_DA_MOI_LAN) return { ok: false, loi: 'qua nhieu ban ghi' };
     const tu = Number(goi.tu) || 0;
@@ -82,6 +98,43 @@ function xuLy_(goi) {
   } finally {
     lock.releaseLock();
   }
+}
+
+const pinHopLe_ = p => typeof p === 'string' && /^\d{6}$/.test(p);
+
+function bam_(s) {
+  return Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s, Utilities.Charset.UTF_8));
+}
+const theCua_ = pin => bam_(pin + ':the');
+
+// Chi luu ban bam kem muoi, khong luu mat ma. Doi mat ma thi moi the cu het hieu luc.
+function luuPin_(kho, p) {
+  const muoi = Utilities.getUuid();
+  const pin = muoi + '.' + bam_(muoi + ':' + p);
+  kho.setProperty('PIN', pin);
+  kho.setProperty('PIN_SAI', '0');
+  kho.setProperty('PIN_DOI', '0');
+  return theCua_(pin);
+}
+
+// Sai 5 lan khoa 15 phut, moi 5 lan sai tiep thoi gian khoa gap doi, toi da 1 ngay.
+function thuPin_(kho, p, pin) {
+  if (!pin) return { ok: false, loi: 'chua co mat ma' };
+  const bayGio = Date.now();
+  const doi = Number(kho.getProperty('PIN_DOI')) || 0;
+  if (bayGio < doi) return { ok: false, loi: 'khoaPin', doi: doi - bayGio };
+
+  const [muoi, bam] = pin.split('.');
+  if (pinHopLe_(p) && bam_(muoi + ':' + p) === bam) {
+    kho.setProperty('PIN_SAI', '0');
+    return { ok: true, the: theCua_(pin) };
+  }
+  const sai = (Number(kho.getProperty('PIN_SAI')) || 0) + 1;
+  kho.setProperty('PIN_SAI', String(sai));
+  if (sai % 5) return { ok: false, loi: 'saiPin', conLai: 5 - sai % 5 };
+  const lau = Math.min(86400000, 900000 * 2 ** (sai / 5 - 1));
+  kho.setProperty('PIN_DOI', String(bayGio + lau));
+  return { ok: false, loi: 'khoaPin', doi: lau };
 }
 
 // Dinh dang chu thuan khong du: Sheets that van tinh "=1+1" thanh 2 va nuot dau ' o dau.
@@ -154,6 +207,13 @@ function doc_(sh, b) {
     cot.forEach((c, i) => { r[c] = chu.includes(c) ? String(v[i]) : Number(v[i]) || 0; });
     return r;
   });
+}
+
+// Quen mat ma: chay ham nay trong trinh soan thao, so van con nguyen, mo app se dat mat ma moi.
+function xoaPin() {
+  const kho = PropertiesService.getScriptProperties();
+  ['PIN', 'PIN_SAI', 'PIN_DOI'].forEach(k => kho.deleteProperty(k));
+  Logger.log('Da xoa mat ma.');
 }
 
 // Chay 1 lan trong trinh soan thao de cap quyen cho script doc ghi Sheet nay.

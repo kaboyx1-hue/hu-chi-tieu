@@ -61,7 +61,7 @@ function docLink(s) {
 function nhanLinkTuDiaChi() {
   const lk = docLink(location.hash);
   if (lk && (!S.lk || S.lk.k !== lk.k || S.lk.id !== lk.id)) {
-    if (S.lk) S.tu = 0; // doi so khac thi keo lai tu dau
+    if (S.lk) { S.tu = 0; boP(); } // doi so khac thi keo lai tu dau, mat ma cung theo so moi
     S.lk = lk;
     luuKho();
   }
@@ -73,8 +73,22 @@ function henDongBo(ms) {
   henGio = setTimeout(dongBo, ms);
 }
 
+async function goiMay(o) {
+  const kiemSoat = new AbortController();
+  const dongHo = setTimeout(() => kiemSoat.abort(), 45000);
+  try {
+    const tl = await fetch(`https://script.google.com/macros/s/${S.lk.id}/exec`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // kieu nay trinh duyet khong hoi truoc, Google chiu duoc
+      body: JSON.stringify({ k: S.lk.k, ...o }),
+      signal: kiemSoat.signal,
+    });
+    return await tl.json();
+  } finally { clearTimeout(dongHo); }
+}
+
 async function dongBo() {
-  if (!S.lk) { veDongBo(); return; }
+  if (!S.lk || !P) { veDongBo(); return; }
   if (trangThai.dang) return;
   trangThai.dang = true;
   veDongBo();
@@ -87,19 +101,13 @@ async function dongBo() {
       return { b, r: S[b][x.slice(i + 1)] };
     }).filter(m => m.r);
 
-    const kiemSoat = new AbortController();
-    const dongHo = setTimeout(() => kiemSoat.abort(), 45000);
-    let kq;
-    try {
-      const tl = await fetch(`https://script.google.com/macros/s/${S.lk.id}/exec`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // kieu nay trinh duyet khong hoi truoc, Google chiu duoc
-        body: JSON.stringify({ k: S.lk.k, thay: gui, tu: S.tu }),
-        signal: kiemSoat.signal,
-      });
-      kq = await tl.json();
-    } finally { clearTimeout(dongHo); }
-
+    const kq = await goiMay({ the: P.the, thay: gui, tu: S.tu });
+    if (kq.loi === 'pin') { // mat ma vua doi o may khac
+      boP();
+      trangThai.dang = false;
+      moKhoa('nhapMay', 'Mật mã đã đổi ở máy khác, hãy nhập mật mã mới');
+      return;
+    }
     if (!kq.ok) throw new Error(kq.loi === 'khoa' ? 'Link riêng không đúng, nhờ mở lại đúng link' : kq.loi);
 
     const biTuChoi = new Set(kq.boQua || []);
@@ -130,11 +138,163 @@ function veDongBo() {
   const cho = Object.keys(S.ban).length;
   el.className = trangThai.loi ? 'loi' : trangThai.dang ? 'dang' : '';
   if (!S.lk) el.textContent = 'Chỉ lưu trên máy này. Hãy mở bằng link riêng để dùng sổ chung';
+  else if (!P) el.textContent = 'Chưa nhập mật mã';
   else if (trangThai.loi) el.textContent = `${trangThai.loi}${cho ? ` · ${cho} mục chờ gửi` : ''}`;
   else if (trangThai.dang) el.textContent = 'Đang đồng bộ…';
   else if (cho) el.textContent = `${cho} mục chờ gửi, có mạng sẽ tự gửi`;
   else if (trangThai.luc) el.textContent = 'Đã đồng bộ lúc ' + new Date(trangThai.luc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   else el.textContent = '';
+}
+
+// ---- Mat ma 6 so ----
+// May chu moi la cua that: khong co "the" thi link khong doc ghi duoc gi (sai 5 lan bi khoa).
+// Moi may giu them ban bam de mo khoa nhanh va mo duoc khi mat mang.
+const KHOA_PIN = 'hct_pin';
+let P = null; // { muoi, bam, the }
+try { P = JSON.parse(localStorage.getItem(KHOA_PIN)); } catch (e) { /* hong thi nhap lai qua may chu */ }
+const K = { che: '', so: '', pin1: '', cu: '', sai: 0, ban: false };
+const TIEU_DE = {
+  nhap: 'Nhập mật mã', nhapMay: 'Nhập mật mã', dat1: 'Đặt mật mã 6 số', dat2: 'Nhập lại mật mã',
+  doiCu: 'Nhập mật mã hiện tại', doiMoi1: 'Nhập mật mã mới', doiMoi2: 'Nhập lại mật mã mới',
+};
+const QUEN = 'Vào Apps Script chạy hàm xoaPin, rồi mở lại app để đặt mật mã mới. Số liệu không mất.';
+
+function boP() {
+  P = null;
+  try { localStorage.removeItem(KHOA_PIN); } catch (e) { /* khong xoa duoc thi lan sau may chu tu chan */ }
+}
+async function banPin(pin, muoi) {
+  const ma = new TextEncoder();
+  const khoa = await crypto.subtle.importKey('raw', ma.encode(pin), 'PBKDF2', false, ['deriveBits']);
+  const bit = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: ma.encode(muoi), iterations: 150000, hash: 'SHA-256' }, khoa, 256);
+  return [...new Uint8Array(bit)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function luuP(pin, the) {
+  const muoi = taoId();
+  P = { muoi, bam: await banPin(pin, muoi), the };
+  try { localStorage.setItem(KHOA_PIN, JSON.stringify(P)); } catch (e) { baoLoi('Máy hết chỗ lưu'); }
+}
+
+function veCham() {
+  document.querySelectorAll('#kCham i').forEach((c, i) => c.classList.toggle('day', i < K.so.length));
+}
+function moKhoa(che, chu = '') {
+  if ($('hop').open) $('hop').close();
+  document.body.classList.remove('che');
+  K.che = che; K.so = '';
+  $('khoa').hidden = false;
+  $('kTieuDe').textContent = TIEU_DE[che];
+  $('kChu').textContent = chu;
+  $('kCham').style.visibility = $('kPhim').style.visibility = '';
+  const phu = che.startsWith('nhap') ? 'Quên mật mã?' : che.startsWith('doi') ? 'Huỷ' : '';
+  $('kPhu').textContent = phu;
+  $('kPhu').style.visibility = phu ? '' : 'hidden';
+  veCham();
+}
+function moApp() {
+  $('khoa').hidden = true;
+  K.che = ''; K.so = ''; K.sai = 0;
+  dongBo();
+  ve(true);
+}
+function saiRung(chu) {
+  K.so = '';
+  veCham();
+  $('kChu').textContent = chu;
+  const c = $('kCham');
+  c.classList.remove('sai');
+  void c.offsetWidth; // chay lai hieu ung lac neu sai lien tiep
+  c.classList.add('sai');
+  if (navigator.vibrate) navigator.vibrate(120);
+}
+function chuLoi(kq) {
+  if (kq.loi === 'saiPin') return `Sai mật mã, còn ${kq.conLai} lần`;
+  if (kq.loi === 'khoaPin') return `Sai nhiều lần, thử lại sau ${Math.ceil(kq.doi / 60000)} phút`;
+  if (kq.loi === 'khoa') return 'Link riêng không đúng';
+  return kq.loi || 'Có lỗi, hãy thử lại';
+}
+async function kiemMay(goiY = '') {
+  $('khoa').hidden = false;
+  K.che = 'kiem'; K.so = '';
+  $('kTieuDe').textContent = 'Hũ Chi Tiêu';
+  $('kChu').textContent = 'Đang kiểm tra…';
+  $('kCham').style.visibility = $('kPhim').style.visibility = 'hidden';
+  $('kPhu').style.visibility = 'hidden';
+  try {
+    const kq = await goiMay({ hoiPin: 1 });
+    if (!kq.ok) throw new Error(chuLoi(kq));
+    if (kq.coPin) moKhoa('nhapMay', goiY);
+    else moKhoa('dat1', 'Mỗi lần mở app sẽ cần mật mã này. Hãy chọn số dễ nhớ với bạn, khó đoán với người khác.');
+  } catch (e) {
+    K.che = 'loiMang';
+    $('kChu').textContent = e.name === 'Error' ? e.message : 'Lần đầu trên máy này cần có mạng';
+    $('kPhu').textContent = 'Thử lại';
+    $('kPhu').style.visibility = '';
+  }
+}
+function vaoApp() {
+  if (!S.lk) return;
+  if (P) moKhoa('nhap');
+  else kiemMay();
+}
+
+const LUONG = {
+  async nhap(so) {
+    if (await banPin(so, P.muoi) === P.bam) { moApp(); return; }
+    K.sai++;
+    if (K.sai < 5) { saiRung(`Sai mật mã, còn ${5 - K.sai} lần`); return; }
+    boP(); // het luot o may nay, chuyen sang may chu de bi gioi han that su
+    K.sai = 0;
+    moKhoa('nhapMay', 'Sai 5 lần. Cần có mạng để kiểm tra lại mật mã.');
+  },
+  async nhapMay(so) {
+    const kq = await goiMay({ pin: so });
+    if (!kq.ok) { saiRung(chuLoi(kq)); return; }
+    await luuP(so, kq.the);
+    moApp();
+  },
+  dat1(so) { K.pin1 = so; moKhoa('dat2', 'Nhập lại lần nữa cho chắc'); },
+  async dat2(so) {
+    if (so !== K.pin1) { moKhoa('dat1', 'Hai lần không giống nhau, hãy đặt lại'); return; }
+    const kq = await goiMay({ datPin: so });
+    K.pin1 = '';
+    if (!kq.ok) { moKhoa('nhapMay', 'Sổ này đã có mật mã'); return; }
+    await luuP(so, kq.the);
+    moApp();
+  },
+  async doiCu(so) {
+    if (await banPin(so, P.muoi) !== P.bam) { saiRung('Sai mật mã'); return; }
+    K.cu = so;
+    moKhoa('doiMoi1');
+  },
+  doiMoi1(so) { K.pin1 = so; moKhoa('doiMoi2'); },
+  async doiMoi2(so) {
+    if (so !== K.pin1) { moKhoa('doiMoi1', 'Hai lần không giống nhau, hãy nhập lại'); return; }
+    const kq = await goiMay({ the: P.the, pinCu: K.cu, pinMoi: so });
+    K.cu = K.pin1 = '';
+    if (!kq.ok) { moKhoa('doiCu', chuLoi(kq)); return; }
+    await luuP(so, kq.the);
+    $('khoa').hidden = true;
+    K.che = ''; K.so = '';
+    bao('Đã đổi mật mã. Máy khác sẽ phải nhập mật mã mới');
+  },
+};
+
+async function bamPhim(d) {
+  if (K.ban || !LUONG[K.che] || K.so.length >= 6) return;
+  K.so += d;
+  veCham();
+  if (K.so.length < 6) return;
+  K.ban = true;
+  await new Promise(r => setTimeout(r, 130)); // cho thay du 6 cham
+  try { await LUONG[K.che](K.so); }
+  catch (e) { saiRung('Chưa kết nối được, hãy thử lại'); }
+  K.ban = false;
+}
+function xoaPhim() {
+  if (K.ban) return;
+  K.so = K.so.slice(0, -1);
+  veCham();
 }
 
 // ---- Quay lai ----
@@ -400,7 +560,9 @@ function veHu() {
       <button class="btn rong" style="margin-top:12px" data-lam="themHu">+ Thêm hũ</button></section>
     <section class="the"><h2>Sổ chung</h2>
       <p class="nhan" style="margin:0 0 10px">${S.lk ? 'Máy này đã nối sổ chung.' : 'Máy này chưa nối sổ chung. Dán link riêng vào đây nếu app chưa tự nhận.'}</p>
-      ${S.lk ? '<button class="btn rong" data-lam="dongBoNgay">Đồng bộ ngay</button>' : '<input id="fLink" placeholder="Dán link riêng" autocomplete="off"><button class="btn rong" style="margin-top:8px" data-lam="noiLink">Nối sổ</button>'}
+      ${S.lk ? `<button class="btn rong" data-lam="dongBoNgay">Đồng bộ ngay</button>
+        <button class="btn rong" style="margin-top:8px" data-lam="doiPin">Đổi mật mã</button>
+        <button class="btn rong" style="margin-top:8px" data-lam="khoaNgay">Khoá app ngay</button>` : '<input id="fLink" placeholder="Dán link riêng" autocomplete="off"><button class="btn rong" style="margin-top:8px" data-lam="noiLink">Nối sổ</button>'}
     </section>`;
 }
 
@@ -435,6 +597,7 @@ function moHop(g, loai = 'chi') {
   $('fGhi').value = F.ghi;
   $('fXoa').hidden = !!F.moi;
   veHop();
+  document.querySelector('.luu').classList.toggle('san', !!F.tien);
   $('hop').classList.remove('dangdong');
   $('hop').showModal();
   luuTrang('push', { hop: 1 });
@@ -497,6 +660,13 @@ let HOAN_TAC = null;
 // ---- Nut bam ----
 const LAM = {
   quayLai() { history.back(); },
+  khoaNgay() { moKhoa('nhap'); },
+  doiPin() { moKhoa('doiCu'); },
+  phuKhoa() {
+    if (K.che.startsWith('doi')) { $('khoa').hidden = true; K.che = ''; K.so = ''; K.cu = K.pin1 = ''; return; }
+    if (K.che.startsWith('nhap')) boP(); // bo ban luu tren may; may chu van giu mat ma nen khong mo duoc tat
+    kiemMay(QUEN);
+  },
   thangLui() { thang = T.congThang(thang, tab === 'nam' ? -12 : -1); locHu = ''; huong = -1; luuTrang('replace'); ve(true); },
   thangToi() { thang = T.congThang(thang, tab === 'nam' ? 12 : 1); locHu = ''; huong = 1; luuTrang('replace'); ve(true); },
   themMoi() { moHop(null); },
@@ -516,7 +686,7 @@ const LAM = {
   noiLink() {
     const lk = docLink($('fLink').value);
     if (!lk) { baoLoi('Link này chưa đúng'); return; }
-    S.lk = lk; S.tu = 0; luuKho(); ve(); dongBo();
+    S.lk = lk; S.tu = 0; boP(); luuKho(); ve(); vaoApp();
   },
   xoaKhoan() {
     const cu = S.gd[F.id];
@@ -538,6 +708,8 @@ document.addEventListener('click', e => {
   if (!el) return;
   const d = el.dataset;
   if (d.lam) LAM[d.lam]();
+  else if (d.phim) bamPhim(d.phim);
+  else if (d.xoaso) xoaPhim();
   else if (d.tab) moTab(d.tab);
   else if (d.xemhu !== undefined) { tab = 'so'; locHu = d.xemhu; luuTrang('push'); ve(true); scrollTo(0, 0); }
   else if (d.loc !== undefined) { locHu = d.loc; luuTrang('replace'); ve(true); }
@@ -565,6 +737,7 @@ $('hop').addEventListener('close', () => { if (history.state && history.state.ho
 $('fTien').addEventListener('input', e => {
   const n = T.docTien(e.target.value);
   e.target.value = n ? T.hienSo(n) : '';
+  document.querySelector('.luu').classList.toggle('san', !!n);
   if (!GIAM.matches) e.target.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }], { duration: 130 });
 });
 
@@ -592,14 +765,37 @@ $('trang').addEventListener('change', e => {
 });
 
 // ---- Khoi dong ----
-window.addEventListener('hashchange', () => { nhanLinkTuDiaChi(); ve(); dongBo(); });
+window.addEventListener('hashchange', () => {
+  nhanLinkTuDiaChi();
+  ve();
+  if (S.lk && !P && $('khoa').hidden) vaoApp();
+  dongBo();
+});
+document.addEventListener('keydown', e => {
+  if ($('khoa').hidden) return;
+  if (/^\d$/.test(e.key)) bamPhim(e.key);
+  else if (e.key === 'Backspace') xoaPhim();
+});
 window.addEventListener('online', () => { trangThai.loi = ''; dongBo(); });
 window.addEventListener('storage', e => { if (e.key === KHOA_KHO) { S = docKho(); ve(); } });
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { veAnToan(); dongBo(); } });
+// Roi app thi che so ngay (de khong lo trong man hinh da nhiem); quay lai sau 1 phut phai nhap lai mat ma.
+let lucAn = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    lucAn = Date.now();
+    if (S.lk && P) document.body.classList.add('che');
+    return;
+  }
+  document.body.classList.remove('che');
+  if (S.lk && P && $('khoa').hidden && Date.now() - lucAn > 60000) moKhoa('nhap');
+  veAnToan();
+  dongBo();
+});
 setInterval(() => { if (!document.hidden) dongBo(); }, 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
 
 nhanLinkTuDiaChi();
 history.replaceState({ tab, locHu, thang, sau: 0 }, '');
+vaoApp();
 ve(true);
-dongBo();
+if ($('khoa').hidden) dongBo();
