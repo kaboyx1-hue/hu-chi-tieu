@@ -33,8 +33,11 @@ main{max-width:560px;margin:0 auto;padding:14px 14px 0}
 /* Dau trang */
 header{position:sticky;top:0;z-index:5;background:var(--c1);color:#fff;padding:calc(6px + env(safe-area-inset-top)) 10px 8px;border-radius:0 0 22px 22px;box-shadow:0 4px 14px rgba(0,100,70,.2)}
 body[data-tab=tq] header{border-radius:0;box-shadow:none}
-.dauthang{max-width:540px;margin:0 auto;display:flex;align-items:center}
-.dauthang h1{flex:1;margin:0;font-size:18px;font-weight:700;text-align:center}
+.dauthang{position:relative;max-width:540px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.dauthang h1{margin:0;min-width:128px;font-size:18px;font-weight:700;text-align:center}
+#lui{position:absolute;left:0;top:0;background:rgba(255,255,255,.2);animation:nay .25s var(--nhanh)}
+#lui[hidden]{display:none}
+#lui svg{width:22px;height:22px}
 .tron{width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;display:grid;place-items:center}
 #dongbo{display:block;width:100%;max-width:540px;margin:0 auto;font-size:12.5px;color:#e4fff4;text-align:center;min-height:18px}
 #dongbo.loi{color:#fff3c4;font-weight:600}
@@ -197,6 +200,7 @@ dialog::backdrop{background:rgba(0,40,30,.4)}
 <body>
 <header>
   <div class="dauthang">
+    <button class="tron" id="lui" data-lam="quayLai" aria-label="Quay lại" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
     <button class="tron" data-lam="thangLui" aria-label="Tháng trước">‹</button>
     <h1 id="tieude"></h1>
     <button class="tron" data-lam="thangToi" aria-label="Tháng sau">›</button>

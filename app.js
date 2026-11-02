@@ -136,6 +136,47 @@ function veDongBo() {
   else el.textContent = '';
 }
 
+// ---- Quay lai ----
+// Moi man hinh la mot buoc trong lich su trinh duyet, nen nut quay lai tren app
+// va nut back cua dien thoai di chung mot duong. Khong doi dia chi: link rieng nam o dau #.
+const doSau = () => (history.state && history.state.sau) || 0;
+function luuTrang(kieu, them) {
+  const st = { tab, locHu, thang, sau: doSau() + (kieu === 'push' ? 1 : 0), ...them };
+  if (kieu === 'push') history.pushState(st, '');
+  else history.replaceState(st, '');
+}
+function capNhatLui() { $('lui').hidden = doSau() === 0; }
+
+// Trang chu la goc. Tu goc vao 1 muc la them 1 buoc; doi giua cac muc thi thay buoc do,
+// nen bam quay lai luon ve trang chu thay vi di lui qua tung muc da xem.
+function moTab(tabMoi) {
+  if (tabMoi === 'tq') {
+    if (doSau()) { history.go(-doSau()); return; }
+    tab = 'tq'; locHu = ''; ve(true); scrollTo(0, 0);
+    return;
+  }
+  const tuGoc = tab === 'tq' && !doSau();
+  tab = tabMoi; locHu = '';
+  luuTrang(tuGoc ? 'push' : 'replace');
+  ve(true);
+  scrollTo(0, 0);
+}
+
+window.addEventListener('popstate', e => {
+  if ($('hop').open) {
+    // Thang co the vua doi vi khoan moi luu o thang khac, ghi lai vao buoc hien tai
+    dongHopThat();
+    luuTrang('replace');
+    capNhatLui();
+    return;
+  }
+  const s = e.state;
+  if (!s) return;
+  tab = s.tab; locHu = s.locHu; thang = s.thang;
+  ve(true);
+  scrollTo(0, 0);
+});
+
 // ---- Ve man hinh ----
 function ve(hieuUng) {
   const [y, m] = thang.split('-');
@@ -148,6 +189,7 @@ function ve(hieuUng) {
   tr.style.setProperty('--dy', huong ? '0' : '12px');
   huong = 0;
   tr.innerHTML = { tq: veTongQuan, so: veSo, hu: veHu, nam: veNam }[tab]();
+  capNhatLui();
   veDongBo();
   chaySo();
 }
@@ -354,9 +396,15 @@ function moHop(g, loai = 'chi') {
   veHop();
   $('hop').classList.remove('dangdong');
   $('hop').showModal();
+  luuTrang('push', { hop: 1 });
   if (F.moi) $('fTien').focus();
 }
+// Dong hop = lui 1 buoc, nen nut back dien thoai dong hop chu khong thoat app.
 function dongHopMuot() {
+  if (history.state && history.state.hop) history.back();
+  else dongHopThat();
+}
+function dongHopThat() {
   const h = $('hop');
   if (!h.open || h.classList.contains('dangdong')) return;
   h.classList.add('dangdong');
@@ -405,8 +453,9 @@ let HOAN_TAC = null;
 
 // ---- Nut bam ----
 const LAM = {
-  thangLui() { thang = T.congThang(thang, tab === 'nam' ? -12 : -1); locHu = ''; huong = -1; ve(true); },
-  thangToi() { thang = T.congThang(thang, tab === 'nam' ? 12 : 1); locHu = ''; huong = 1; ve(true); },
+  quayLai() { history.back(); },
+  thangLui() { thang = T.congThang(thang, tab === 'nam' ? -12 : -1); locHu = ''; huong = -1; luuTrang('replace'); ve(true); },
+  thangToi() { thang = T.congThang(thang, tab === 'nam' ? 12 : 1); locHu = ''; huong = 1; luuTrang('replace'); ve(true); },
   themMoi() { moHop(null); },
   themThu() { moHop(null, 'thu'); },
   dongHop() { dongHopMuot(); },
@@ -446,11 +495,11 @@ document.addEventListener('click', e => {
   if (!el) return;
   const d = el.dataset;
   if (d.lam) LAM[d.lam]();
-  else if (d.tab) { tab = d.tab; locHu = ''; ve(true); scrollTo(0, 0); }
-  else if (d.xemhu !== undefined) { tab = 'so'; locHu = d.xemhu; ve(true); scrollTo(0, 0); }
-  else if (d.loc !== undefined) { locHu = d.loc; ve(true); }
+  else if (d.tab) moTab(d.tab);
+  else if (d.xemhu !== undefined) { tab = 'so'; locHu = d.xemhu; luuTrang('push'); ve(true); scrollTo(0, 0); }
+  else if (d.loc !== undefined) { locHu = d.loc; luuTrang('replace'); ve(true); }
   else if (d.sua) moHop(S.gd[d.sua]);
-  else if (d.thang) { thang = d.thang; tab = 'tq'; ve(true); scrollTo(0, 0); }
+  else if (d.thang) { thang = d.thang; tab = 'tq'; luuTrang('push'); ve(true); scrollTo(0, 0); }
   else if (d.loai) { F.loai = d.loai; veHop(); }
   else if (d.chonhu) { F.hu = d.chonhu; veHop(); }
   else if (d.nhanh) { $('fTien').value = T.hienSo(d.nhanh); }
@@ -464,6 +513,9 @@ document.addEventListener('click', e => {
 });
 
 $('fForm').addEventListener('submit', e => { e.preventDefault(); luuHop(); });
+$('hop').addEventListener('cancel', e => { e.preventDefault(); dongHopMuot(); });
+// Trinh duyet tu dong hop (nut back Android) ma chua lui buoc thi lui not
+$('hop').addEventListener('close', () => { if (history.state && history.state.hop) history.back(); });
 $('fTien').addEventListener('input', e => { const n = T.docTien(e.target.value); e.target.value = n ? T.hienSo(n) : ''; });
 
 // Ban o Cac hu: luu khi roi o, khong ve lai luc dang go de khong mat con tro.
@@ -498,5 +550,6 @@ setInterval(() => { if (!document.hidden) dongBo(); }, 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
 
 nhanLinkTuDiaChi();
+history.replaceState({ tab, locHu, thang, sau: 0 }, '');
 ve(true);
 dongBo();
